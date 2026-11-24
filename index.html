@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>森林小镇计划</title>
+  <style>
+    :root {
+      --ink: #23312a;
+      --muted: #6d7c71;
+      --paper: #fffaf0;
+      --paper-strong: #fffdf7;
+      --line: #e9dfcb;
+      --green: #437a58;
+      --green-dark: #2f6045;
+      --mint: #dff1df;
+      --orange: #ef9c4b;
+      --orange-soft: #fff0d9;
+      --blue: #6c9bc7;
+      --blue-soft: #e7f1fb;
+      --purple: #9b7bc4;
+      --shadow: 0 20px 48px rgba(71, 65, 43, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Nunito", "Avenir Next", "PingFang SC", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 10% 5%, rgba(255, 228, 159, .46), transparent 30%),
+        linear-gradient(180deg, #f6f4e9 0%, #f1eadb 100%);
+    }
+
+    button { font: inherit; }
+    .app-shell { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 26px 0 42px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 15px; background: var(--green); color: white; font-size: 25px; box-shadow: 0 7px 16px rgba(67, 122, 88, .22); }
+    .brand-copy strong { display: block; font-size: 16px; letter-spacing: .02em; }
+    .help-button { border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.65); color: var(--green-dark); padding: 10px 16px; cursor: pointer; }
+    .topbar-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+    .topbar-actions button { min-height: 44px; white-space: nowrap; }
+    .sound-button { min-width: 44px; }
+    .sound-button[aria-pressed="false"] { background: var(--paper); color: var(--muted); }
+    .screen { display: none; }
+    .screen.active { display: block; animation: appear .35s ease; }
+    @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .hero { display: grid; grid-template-columns: 1.06fr .94fr; gap: 30px; align-items: center; margin: 30px 0 32px; }
+    .eyebrow { color: var(--green); font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    h1 { margin: 10px 0 14px; max-width: 560px; font-size: clamp(38px, 6vw, 70px); line-height: .98; letter-spacing: -.055em; }
+    .hero p { max-width: 520px; margin: 0; color: var(--muted); font-size: 17px; line-height: 1.65; }
+    .hero-art { position: relative; min-height: 300px; border-radius: 34px; overflow: hidden; background: linear-gradient(145deg, #e4f3df, #fff0cf); box-shadow: var(--shadow); }
+    .hero-art::before, .hero-art::after { content: ""; position: absolute; border-radius: 50%; background: rgba(255,255,255,.42); }
+    .hero-art::before { width: 220px; height: 220px; right: -70px; top: -60px; }
+    .hero-art::after { width: 150px; height: 150px; left: -50px; bottom: -60px; }
+    .hill { position: absolute; left: -6%; right: -6%; bottom: -22px; height: 130px; border-radius: 50% 50% 0 0; background: #a9d399; }
+    .hill.two { bottom: -62px; height: 145px; background: #7db57e; opacity: .8; }
+    .tree { position: absolute; bottom: 74px; font-size: 58px; filter: drop-shadow(0 6px 4px rgba(59, 101, 63, .13)); }
+    .tree.one { left: 14%; } .tree.two { right: 15%; bottom: 70px; font-size: 72px; }
+    .cabin { position: absolute; left: 38%; bottom: 64px; font-size: 78px; z-index: 2; transform: rotate(-2deg); }
+    .sun { position: absolute; top: 30px; left: 30px; font-size: 38px; }
+    .difficulty-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .difficulty-card { text-align: left; border: 2px solid transparent; border-radius: 20px; padding: 17px; min-height: 128px; background: var(--paper-strong); box-shadow: 0 8px 24px rgba(82, 72, 48, .07); cursor: pointer; transition: transform .2s, border-color .2s, box-shadow .2s; }
+    .difficulty-card:hover { transform: translateY(-3px); box-shadow: 0 14px 26px rgba(82, 72, 48, .11); }
+    .difficulty-card .level { display: inline-flex; padding: 5px 9px; border-radius: 999px; font-size: 12px; font-weight: 800; background: var(--mint); color: var(--green-dark); }
+    .difficulty-card.medium .level { background: var(--orange-soft); color: #a86524; }
+    .difficulty-card.hard .level { background: #eee5fb; color: #7354a0; }
+    .difficulty-card strong { display: block; margin: 10px 0 4px; font-size: 17px; }
+    .difficulty-card small { color: var(--muted); line-height: 1.4; }
+    .level-group { margin-top: 22px; }
+    .level-group h3 { margin: 0 0 10px; }
+    .level-header, .result-buttons { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .level-header { justify-content: space-between; }
+    .level-header h2 { margin: 0; }
+    .result-buttons { justify-content: center; }
+    .completion { display: block; margin-top: 6px; color: var(--green-dark); font-size: 12px; font-weight: 800; }
+    .secondary { border: 1px solid var(--line); border-radius: 14px; background: #fffaf0; color: var(--green-dark); padding: 12px 16px; font-weight: 800; cursor: pointer; }
+    .secondary:focus-visible { outline: 3px solid var(--green-dark); outline-offset: 3px; }
+    #leaveButton { margin-top: 16px; }
+    [hidden] { display: none !important; }
+    .primary { border: 0; border-radius: 14px; background: var(--green); color: white; padding: 14px 24px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 16px rgba(67, 122, 88, .2); transition: transform .2s, background .2s; }
+    .primary:hover { background: var(--green-dark); transform: translateY(-2px); }
+    .tip { color: var(--muted); font-size: 13px; }
+    .game-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin: 22px 0 18px; }
+    .game-head h2, .result-card h2 { margin: 5px 0 0; font-size: clamp(27px, 4vw, 40px); letter-spacing: -.04em; }
+    .round-pill { padding: 11px 14px; border-radius: 999px; color: var(--green-dark); background: var(--mint); font-weight: 800; white-space: nowrap; }
+    .weather { display: flex; gap: 10px; align-items: center; padding: 12px 14px; border-radius: 16px; color: #8b5c1e; background: var(--orange-soft); font-size: 13px; }
+    .resource-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 18px 0; }
+    .resource { padding: 18px; border-radius: 20px; background: var(--paper-strong); border: 1px solid rgba(233,223,203,.75); }
+    .resource-top { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 13px; }
+    .resource-value { margin-top: 7px; font-size: 30px; font-weight: 900; letter-spacing: -.05em; }
+    .resource-icon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; background: var(--mint); font-size: 19px; }
+    .resource:nth-child(2) .resource-icon { background: var(--orange-soft); }
+    .game-grid { display: grid; grid-template-columns: .92fr 1.08fr; gap: 16px; align-items: start; }
+    #townPanel { grid-column: 1; grid-row: 1; }
+    #actionsPanel { grid-column: 2; grid-row: 1; }
+    #actionsPanel.full-width { grid-column: 1 / -1; }
+    .panel { background: var(--paper-strong); border: 1px solid rgba(233,223,203,.78); border-radius: 24px; padding: 22px; box-shadow: 0 10px 28px rgba(82,72,48,.06); }
+    .panel h3 { margin: 0 0 15px; font-size: 17px; }
+    .goal { display: flex; gap: 12px; align-items: center; padding: 14px 0; border-bottom: 1px solid #f0e8d9; }
+    .goal:last-child { border-bottom: 0; padding-bottom: 3px; }
+    .goal-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px; background: #f7ead2; font-size: 21px; }
+    .goal-main { flex: 1; } .goal-main strong { display: block; font-size: 14px; } .goal-main small { color: var(--muted); }
+    .goal-state { white-space: nowrap; font-size: 14px; } .goal.done .goal-state { color: var(--green); }
+    .actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+    .action { border: 1px solid var(--line); border-radius: 18px; padding: 16px 12px; background: #fffaf0; text-align: left; cursor: pointer; transition: transform .2s, border-color .2s, background .2s; }
+    .action:hover { transform: translateY(-3px); border-color: var(--green); background: #f5fbf2; }
+    .action-icon { font-size: 25px; } .action strong { display: block; margin: 8px 0 4px; font-size: 14px; } .action small { display: block; color: var(--muted); line-height: 1.35; }
+    .action-note { display: block; margin-top: 7px; color: var(--green-dark); font-size: 13px; line-height: 1.4; }
+    .action[aria-disabled="true"] { cursor: default; background: #f4efe5; }
+    .action[aria-disabled="true"]:hover { transform: none; border-color: var(--line); }
+    .action[aria-disabled="true"] .action-note { color: #805025; }
+    .action:focus-visible, .difficulty-card:focus-visible, .primary:focus-visible { outline: 3px solid var(--green-dark); outline-offset: 3px; }
+    .action-group { margin-top: 18px; }
+    .action-group h4 { margin: 0 0 8px; font-size: 14px; }
+    .mission { margin-bottom: 12px; }
+    .mission h3 { margin: 0 0 9px; }
+    .mission ul { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+    .mission li { background: #f5eddd; padding: 7px 10px; border-radius: 10px; font-size: 14px; }
+    .mission .done { background: var(--mint); color: var(--green-dark); }
+    .guide { margin: 8px 0 0; line-height: 1.55; color: var(--green-dark); font-size: 14px; }
+    .action-intro { margin: -6px 0 12px; color: var(--muted); font-size: 14px; }
+    .log { min-height: 48px; margin-top: 14px; padding: 13px 15px; border-radius: 14px; color: var(--green-dark); background: #eef8eb; font-size: 13px; line-height: 1.5; }
+    .result-wrap { display: grid; place-items: center; min-height: 62vh; }
+    .result-card { width: min(600px, 100%); text-align: center; padding: 42px 28px; border-radius: 28px; background: var(--paper-strong); box-shadow: var(--shadow); }
+    .result-emoji { font-size: 60px; } .stars { margin: 14px 0; color: #e9a43d; font-size: 34px; letter-spacing: 5px; }
+    .result-card p { color: var(--muted); line-height: 1.6; }
+    .result-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 22px 0; } .result-stat { padding: 13px; border-radius: 15px; background: #f8f2e7; } .result-stat strong { display: block; font-size: 24px; } .result-stat span { color: var(--muted); font-size: 12px; }
+    .mission-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+    .rules-link { border: 0; background: transparent; color: var(--green-dark); cursor: pointer; min-height: 44px; padding: 0 4px 0 8px; text-decoration: underline; text-underline-offset: .2em; }
+    dialog { width: min(580px, calc(100% - 24px)); max-height: none; border: 0; border-radius: 22px; padding: 0; box-shadow: var(--shadow); color: var(--ink); background: var(--paper-strong); }
+    dialog::backdrop { background: rgba(35,49,42,.42); }
+    .dialog-layout { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); }
+    .dialog-heading, .dialog-footer { padding: 14px clamp(14px, 4vw, 24px); }
+    .dialog-heading { border-bottom: 1px solid var(--line); }
+    .dialog-heading h2 { margin: 0; font-size: 24px; }
+    .dialog-body { overflow-y: auto; overscroll-behavior: contain; padding: 0 clamp(14px, 4vw, 24px) 16px; font-size: 15px; line-height: 1.6; }
+    .dialog-body h3 { margin: 16px 0 6px; font-size: 17px; }
+    .dialog-body p, .dialog-body ol, .dialog-body ul { margin: 0; }
+    .dialog-body ol, .dialog-body ul { padding-left: 22px; }
+    .dialog-body li + li { margin-top: 5px; }
+    .rules-example { margin-top: 16px; border-radius: 14px; background: #eef8eb; padding: 12px 14px; }
+    .rules-example h3 { margin-top: 0; }
+    .dialog-footer { border-top: 1px solid var(--line); }
+    .dialog-close { width: 100%; min-height: 44px; border: 0; border-radius: 13px; background: var(--mint); color: var(--green-dark); padding: 10px; cursor: pointer; font-weight: 800; }
+    @media (max-width: 780px) {
+      .app-shell { width: min(100% - 22px, 640px); padding-top: 16px; }
+      .hero { grid-template-columns: 1fr; gap: 20px; margin-top: 18px; } .hero-art { min-height: 220px; } .cabin { left: 38%; bottom: 48px; font-size: 65px; } .tree { bottom: 56px; font-size: 48px; } .tree.two { bottom: 55px; font-size: 58px; }
+      .difficulty-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .difficulty-card { min-height: 110px; padding: 12px; }
+      .game-grid { grid-template-columns: 1fr; } #actionsPanel, #townPanel { grid-column: auto; grid-row: auto; } .game-head { align-items: start; } .resource-row { gap: 8px; } .resource { padding: 13px 11px; } .resource-value { font-size: 26px; } .resource-top { font-size: 12px; } .resource-icon { width: 29px; height: 29px; font-size: 16px; }
+      .actions { gap: 8px; } .action { padding: 13px 11px; } .action small { font-size: 13px; }
+    }
+    @media (max-width: 420px) {
+      .topbar { gap: 8px; } .brand { gap: 8px; } .topbar-actions .help-button { padding-inline: 10px; } .sound-label { display: none; }
+      h1 { font-size: 42px; } .panel { padding: 17px; } .result-stats { gap: 7px; } .result-stat { padding-inline: 7px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark">🌿</div><div class="brand-copy"><strong>森林小镇计划</strong></div></div>
+      <div class="topbar-actions">
+        <button type="button" class="help-button sound-button" id="soundButton" aria-label="游戏声音" aria-pressed="true" hidden>
+          <span id="soundIcon" aria-hidden="true">🔊</span><span class="sound-label" aria-hidden="true"> 声音</span>
+        </button>
+        <button type="button" class="help-button" id="helpButton" aria-haspopup="dialog">怎么玩？</button>
+      </div>
+    </header>
+
+    <main id="homeScreen" class="screen active">
+      <section class="hero">
+        <div>
+          <h1>森林庆典要开始啦！</h1>
+          <p>做一回小小村长。从采第一篮果实到筹备森林庆典，20 关都有新任务。每天选一件事，想好怎么用木头和果实。</p>
+        </div>
+        <div class="hero-art" aria-label="森林小镇插画">
+          <div class="sun">☀️</div><div class="tree one">🌲</div><div class="tree two">🌳</div><div class="cabin">🏡</div><div class="hill"></div><div class="hill two"></div>
+        </div>
+      </section>
+      <section>
+        <div class="level-header"><h2 id="levelTitle" tabindex="-1">选择关卡</h2><span class="tip" id="levelProgress"></span></div>
+        <div id="levelMap"></div>
+      </section>
+    </main>
+
+    <main id="gameScreen" class="screen">
+      <div class="game-head"><div><div class="eyebrow" id="gameEyebrow"></div><h2 tabindex="-1" id="gameTitle">今天要做什么？</h2></div><div class="round-pill" id="roundLabel"></div></div>
+      <section class="panel mission" aria-labelledby="missionTitle">
+        <div class="mission-heading">
+          <h3 id="missionTitle">通关目标</h3>
+          <button type="button" class="rules-link" id="levelHelpButton" aria-haspopup="dialog">查看规则</button>
+        </div>
+        <ul id="missionProgress"></ul>
+        <p class="guide" id="guide"></p>
+      </section>
+      <div class="weather" id="weatherLabel"></div>
+      <section class="resource-row">
+        <div class="resource"><div class="resource-top"><span>木头</span><span class="resource-icon">🪵</span></div><div class="resource-value" id="woodValue">4</div></div>
+        <div class="resource"><div class="resource-top"><span>果实</span><span class="resource-icon">🍎</span></div><div class="resource-value" id="berryValue">5</div></div>
+      </section>
+      <div class="game-grid">
+        <section class="panel" id="actionsPanel">
+          <h3>选一件事做</h3>
+          <p class="action-intro">做完就进入下一天。按钮会告诉你做完还剩多少。</p>
+          <div class="log" id="log" role="status" aria-atomic="true"></div>
+          <div class="action-group"><h4>采集</h4><div class="actions" id="gatherActions"></div></div>
+          <div class="action-group" id="buildGroup"><h4>建造</h4><div class="actions" id="buildActions"></div></div>
+          <div class="action-group" id="wishGroup"><h4>帮村民</h4><div class="actions" id="wishActions"></div></div>
+        </section>
+        <section class="panel" id="townPanel"><h3>小镇进度</h3><div id="goals"></div></section>
+      </div>
+      <button class="secondary" id="leaveButton" type="button">返回选关</button>
+    </main>
+
+    <main id="resultScreen" class="screen">
+      <div class="result-wrap">
+        <section class="result-card">
+          <div class="result-emoji" id="resultEmoji">🎉</div>
+          <h2 id="resultTitle" tabindex="-1"></h2>
+          <div class="stars" id="resultStars">★★★</div>
+          <p id="resultCopy"></p>
+          <div class="log" id="resultLastAction"></div>
+          <div class="result-stats" id="resultStats"></div>
+          <div class="result-buttons">
+            <button class="primary" id="nextButton">下一关 →</button>
+            <button class="secondary" id="againButton">重玩本关</button>
+            <button class="secondary" id="levelsButton">返回选关</button>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <dialog id="helpDialog" aria-labelledby="helpTitle">
+    <div class="dialog-layout">
+      <header class="dialog-heading"><h2 id="helpTitle" tabindex="-1">游戏规则</h2></header>
+      <div class="dialog-body" id="helpBody">
+        <section id="helpLevel" hidden>
+          <h3 id="helpLevelTitle"></h3>
+          <ul id="helpLevelRules"></ul>
+        </section>
+        <section>
+          <h3>每天怎么做</h3>
+          <ol>
+            <li>先看「通关目标」和右上角的天数。目标写着「留下果实 2 / 4」，表示手上有 2 个，这关要求最后至少留 4 个。</li>
+            <li>每天做一件事。选采集、建造或帮村民，点一下就会执行。你可以慢慢想，思考时天数会停在当天。</li>
+            <li>点前看「做完剩」来比较库存。如果材料不够、设施已建好或心愿已完成，该按钮不会花掉一天。</li>
+          </ol>
+        </section>
+        <section class="rules-example">
+          <h3>试试第 1 关「第一篮果实」</h3>
+          <p>你有 2 天，要留下至少 4 个果实。点一次「去果园」，收获 4 个果实，当天就能过关。你也可以连续两天各去一次木林，每天拿 2 个果实。</p>
+        </section>
+        <section>
+          <h3>采集能拿多少</h3>
+          <ul id="helpGatherRules"></ul>
+        </section>
+        <section>
+          <h3>建造和帮忙要花多少</h3>
+          <p>🪵 是木头，🍎 是果实。每关只会显示本关可以做的行动。</p>
+          <ul id="helpCostRules"></ul>
+        </section>
+        <section>
+          <h3>后面的关卡会多什么</h3>
+          <ul>
+            <li><strong>天气。</strong>雨天去木林少拿 2 个木头，果实照常。天气栏会告诉你明天是晴还是雨。</li>
+            <li><strong>心愿期限。</strong>如果写「第 3 天结束前」，第 3 天还可以帮，第 4 天就来不及了。</li>
+            <li><strong>果实过夜。</strong>有这条规则的关卡里，没盖仓库时，每次进入下一天会少 1 个果实。果实为 0 时保持 0，盖仓库当天起就能保住果实。结算时直接看当日做完后的库存。</li>
+          </ul>
+        </section>
+        <section>
+          <h3>怎样过关</h3>
+          <p>在最后一天结束前，让「通关目标」全部打勾。达成所有目标就会立刻过关，拿到 3 颗星。如果天数用完时还有目标没达成，每完成一个目标拿 1 颗星，最多 2 颗。结算页会告诉你还差什么，可以重玩本关。</p>
+        </section>
+      </div>
+      <footer class="dialog-footer"><button type="button" class="dialog-close" id="closeDialog">知道啦</button></footer>
+    </div>
+  </dialog>
+  <script>
+    const levelScenarios = [
+      {"name":"第一篮果实","rounds":2,"reserve":4,"hint":"先比一比：去木林和去果园，哪一个能更快凑齐 4 个果实？"},
+      {"name":"给小镇找木头","rounds":3,"woodGoal":6,"hint":"目标是木头。看清每个地方能带回什么，再选择去哪儿。"},
+      {"name":"熊熊缺个果篮","rounds":3,"berries":1,"requests":["bear"],"hint":"果篮需要 3 个果实，你手里有 1 个。采齐后记得点熊熊的心愿。"},
+      {"name":"小狐狸的新树屋","rounds":3,"wood":1,"requests":["fox"],"hint":"树屋要用木头和果实。哪个地方一趟能带回这两样？"},
+      {"name":"工坊开工啦","rounds":4,"wood":3,"berries":1,"builds":["workshop"],"woodGoal":5,"hint":"盖工坊会花掉木头，但之后每次去木林都能多拿 2 个。试试先建再采。"},
+      {"name":"小镇第一次庆典","rounds":6,"wood":2,"berries":1,"builds":["pantry"],"requests":["fox","bear"],"hint":"仓库和树屋都要木头。选行动前，可以先数一数它们一共要几个。"},
+      {"name":"雨天去哪儿","rounds":4,"rainDays":[1,3],"woodGoal":4,"reserve":7,"hint":"今天木林收获少，明天会晴。你可以考虑今天采果，明天采木。"},
+      {"name":"给庆典留一篮","rounds":4,"berries":1,"requests":["bear"],"reserve":5,"rainDays":[3],"hint":"熊熊要 3 个果实，庆典还要留 5 个。算算一共要准备多少。"},
+      {"name":"仓库里的大丰收","rounds":5,"wood":4,"builds":["pantry"],"reserve":12,"rainDays":[2,4],"hint":"有仓库时每趟果园多带回 1 个果实。想想是先去采果，还是先把仓库建好。"},
+      {"name":"两座设施先盖谁","rounds":6,"wood":3,"berries":1,"builds":["workshop","pantry"],"woodGoal":4,"rainDays":[2,5],"hint":"两座都要建。先看看哪个能帮你更快补回已经花掉的木头。"},
+      {"name":"帮忙也要留材料","rounds":6,"wood":2,"berries":2,"builds":["workshop"],"requests":["fox","rabbit"],"woodGoal":4,"rainDays":[3,5],"hint":"工坊、树屋和花园会用掉同一堆木头。别忘了最后还要留 4 个。"},
+      {"name":"三个邻居都来啦","rounds":7,"wood":1,"berries":1,"requests":["fox","bear","rabbit"],"reserve":6,"rainDays":[2,4,6],"hint":"先记住三个心愿要用的材料。下雨时，可以把一天留给帮忙或采果。"},
+      {"name":"忙碌集市","rounds":7,"wood":3,"berries":2,"builds":["workshop","pantry"],"requests":["fox","bear"],"reserve":6,"rainDays":[3,6],"hint":"先计划哪几天去木林、哪几天盖设施，再想帮完熊熊还剩多少果实。"},
+      {"name":"狐狸的树屋约定","rounds":7,"wood":2,"berries":2,"builds":["workshop"],"requests":["fox","bear"],"woodGoal":5,"reserve":4,"rainDays":[2,5],"deadlines":{"fox":2},"hint":"狐狸只等到第 2 天。看看先帮狐狸之后，还能用哪几个晴天补木头。"},
+      {"name":"果实去哪儿了","rounds":7,"wood":3,"berries":2,"builds":["pantry"],"requests":["bear","rabbit"],"reserve":7,"rainDays":[2,4,6],"spoil":1,"hint":"还没仓库时，果实每过一夜就少 1 个。动作预览已经算进这笔损耗。"},
+      {"name":"仓库与紧急果篮","rounds":7,"wood":3,"berries":2,"builds":["pantry"],"requests":["bear","rabbit"],"woodGoal":3,"reserve":6,"rainDays":[2,4,6],"spoil":1,"deadlines":{"bear":3},"hint":"熊熊第 3 天就要果篮。先采果再建仓，和先建仓再采果，会差几个果实？"},
+      {"name":"排好三场约定","rounds":9,"wood":3,"berries":2,"builds":["workshop","pantry"],"requests":["fox","bear","rabbit"],"reserve":6,"rainDays":[3,5,7],"deadlines":{"fox":4,"bear":6,"rabbit":8},"hint":"三位邻居约的日子不同。留出帮忙的时间，再用晴天补建造材料。"},
+      {"name":"连雨前的准备","rounds":8,"wood":3,"berries":2,"builds":["workshop","pantry"],"requests":["fox","bear"],"woodGoal":6,"reserve":6,"rainDays":[3,4,5,7],"spoil":1,"deadlines":{"fox":5,"bear":7},"hint":"第 3 到第 5 天连着下雨。想想怎样利用最早的两个晴天把木头备好。"},
+      {"name":"最后一趟果园","rounds":10,"wood":3,"berries":3,"builds":["workshop","pantry"],"requests":["fox","bear","rabbit"],"woodGoal":5,"reserve":8,"rainDays":[2,4,7],"spoil":1,"deadlines":{"fox":4,"bear":7,"rabbit":9},"hint":"采果、建造和帮忙都占一天。试着倒着数一数，最后几天要分别做什么。"},
+      {"name":"森林庆典总决赛","rounds":10,"wood":3,"berries":4,"builds":["workshop","pantry"],"requests":["fox","bear","rabbit"],"woodGoal":6,"reserve":9,"rainDays":[3,5,7,8],"spoil":1,"deadlines":{"fox":4,"bear":7,"rabbit":8},"hint":"同时顾好晴天、心愿期限和庆典库存。做决定前，先看哪件事错过今天就来不及。"}
+    ];
+    const difficulties = [
+      { key: 'easy', label: '简单', range: '第 1–6 关', intro: '认识资源和行动' },
+      { key: 'medium', label: '中等', range: '第 7–13 关', intro: '看天气，留材料' },
+      { key: 'hard', label: '复杂', range: '第 14–20 关', intro: '守住期限和库存' }
+    ];
+    const levels = levelScenarios.map((scenario, index) => ({
+      wood: 0, berries: 0, woodGoal: 0, reserve: 0,
+      builds: [], requests: [], rainDays: [], spoil: 0, deadlines: {},
+      ...scenario,
+      number: index + 1,
+      difficulty: difficulties[index < 6 ? 0 : index < 13 ? 1 : 2]
+    }));
+    const buildings = [
+      { "id": "workshop", "icon": "🛠️", "name": "森林工坊", "wood": 3, "berries": 1, "benefit": "以后去木林，多带回 2 个木头" },
+      { "id": "pantry", "icon": "🏠", "name": "果实仓库", "wood": 4, "berries": 0, "benefit": "以后去果园，多带回 1 个果实" }
+    ];
+    const wishes = [
+      { "id": "fox", "icon": "🦊", "name": "狐狸的树屋", "wood": 2, "berries": 1 },
+      { "id": "bear", "icon": "🐻", "name": "熊熊的果篮", "wood": 0, "berries": 3 },
+      { "id": "rabbit", "icon": "🐰", "name": "兔子的花园", "wood": 1, "berries": 2 }
+    ];
+    const harvest = { sunnyWood: 3, rainyWood: 1, forestFruit: 2, orchardFruit: 4, workshopBonus: 2, pantryBonus: 1 };
+    const progressKey = 'forest-town-cleared-v1';
+    const cleared = loadProgress();
+    const $ = (id) => document.getElementById(id);
+    const SoundContext = window.AudioContext || window.webkitAudioContext;
+    const soundKey = 'forest-town-sound';
+    // Each note contains frequency in Hz, delay in seconds, and duration in seconds.
+    const sounds = {
+      start: { type: 'sine', notes: [[392, 0, .12], [523, .085, .16]] },
+      wood: { type: 'triangle', notes: [[196, 0, .072], [147, .078, .085]] },
+      berries: { type: 'sine', notes: [[659, 0, .105], [784, .06, .105], [1047, .12, .15]] },
+      workshop: { type: 'triangle', notes: [[220, 0, .07], [247, .09, .07], [262, .18, .07], [523, .27, .15]] },
+      pantry: { type: 'triangle', notes: [[165, 0, .085], [330, .1, .115], [440, .19, .16]] },
+      wish: { type: 'sine', notes: [[440, 0, .13], [554, .1, .13], [659, .2, .2]] },
+      cleared: { type: 'sine', notes: [[523, 0, .12], [659, .11, .12], [784, .22, .12], [1047, .34, .26]] },
+      retry: { type: 'sine', notes: [[440, 0, .14], [349, .13, .21]] }
+    };
+    let soundEnabled = true;
+    let soundContext;
+    let activeSound;
+    let soundRequest = 0;
+    let state;
+
+    function stopSound() {
+      soundRequest += 1;
+      if (activeSound) activeSound.disconnect();
+      activeSound = null;
+    }
+
+    async function playSound(...cues) {
+      stopSound();
+      if (!SoundContext || !soundEnabled || document.hidden) return;
+      const request = soundRequest;
+      try {
+        if (!soundContext) soundContext = new SoundContext();
+        if (soundContext.state !== 'running') await soundContext.resume();
+        if (request !== soundRequest || soundContext.state !== 'running') return;
+
+        const output = soundContext.createGain();
+        output.gain.value = .3;
+        output.connect(soundContext.destination);
+        activeSound = output;
+        let cueStart = soundContext.currentTime + .015;
+        for (const cue of cues) {
+          const { type, notes } = sounds[cue];
+          let cueEnd = cueStart;
+          for (const [frequency, delay, duration] of notes) {
+            const tone = soundContext.createOscillator();
+            const envelope = soundContext.createGain();
+            const start = cueStart + delay;
+            const end = start + duration;
+            tone.type = type;
+            tone.frequency.value = frequency;
+            envelope.gain.setValueAtTime(.0001, start);
+            envelope.gain.exponentialRampToValueAtTime(.24, start + .009);
+            envelope.gain.exponentialRampToValueAtTime(.0001, end);
+            tone.connect(envelope);
+            envelope.connect(output);
+            tone.onended = () => {
+              tone.disconnect();
+              envelope.disconnect();
+            };
+            tone.start(start);
+            tone.stop(end);
+            cueEnd = Math.max(cueEnd, end);
+          }
+          cueStart = cueEnd + .05;
+        }
+      } catch {
+        // Audio setup is optional so an unavailable audio device cannot block the game.
+        if (request === soundRequest) stopSound();
+      }
+    }
+
+    function renderSoundToggle() {
+      const button = $('soundButton');
+      button.setAttribute('aria-pressed', String(soundEnabled));
+      button.title = soundEnabled ? '关闭游戏声音' : '开启游戏声音';
+      $('soundIcon').textContent = soundEnabled ? '🔊' : '🔇';
+    }
+
+    if (SoundContext) {
+      try {
+        soundEnabled = localStorage.getItem(soundKey) !== 'off';
+      } catch {
+        // The toggle remains available for this visit if storage is unavailable.
+      }
+      $('soundButton').hidden = false;
+      renderSoundToggle();
+      $('soundButton').addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        try {
+          localStorage.setItem(soundKey, soundEnabled ? 'on' : 'off');
+        } catch {
+          // Keep the new setting in memory.
+        }
+        renderSoundToggle();
+        if (soundEnabled) playSound('start');
+        else stopSound();
+      });
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopSound();
+      });
+    }
+
+    function loadProgress() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(progressKey));
+        if (Array.isArray(saved)) {
+          return new Set(saved.filter((number) => Number.isInteger(number) && number >= 1 && number <= levels.length));
+        }
+      } catch {
+        // Storage can be unavailable when opening the game as a local file.
+      }
+      return new Set();
+    }
+
+    function markCleared(number) {
+      cleared.add(number);
+      try {
+        localStorage.setItem(progressKey, JSON.stringify([...cleared]));
+      } catch {
+        // The level map can still show progress for this session.
+      }
+    }
+
+    function renderLevelMap() {
+      $('levelProgress').textContent = `已通关 ${cleared.size} / ${levels.length}`;
+      $('levelMap').innerHTML = difficulties.map((difficulty) => `
+        <section class="level-group">
+          <h3>${difficulty.label} <span class="tip">${difficulty.range} · ${difficulty.intro}</span></h3>
+          <div class="difficulty-grid">${levels.filter((level) => level.difficulty === difficulty).map((level) => `
+            <button type="button" class="difficulty-card ${difficulty.key}" data-level="${level.number}">
+              <span class="level">第 ${level.number} 关</span>
+              <strong>${level.name}</strong><small>${level.rounds} 天</small>
+              ${cleared.has(level.number) ? '<span class="completion">✓ 已通关</span>' : ''}
+            </button>`).join('')}
+          </div>
+        </section>`).join('');
+    }
+
+    function showScreen(id, focusId) {
+      document.querySelectorAll('.screen').forEach((screen) => screen.classList.toggle('active', screen.id === id));
+      window.scrollTo(0, 0);
+      $(focusId).focus({ preventScroll: true });
+    }
+
+    function startGame(number) {
+      const level = levels[number - 1];
+      if (!level) return;
+      state = {
+        level,
+        day: 1,
+        wood: level.wood,
+        berries: level.berries,
+        built: [],
+        helped: [],
+        facilities: level.builds.length ? buildings : [],
+        wishes: wishes.filter((wish) => level.requests.includes(wish.id)),
+        message: '',
+        finished: false
+      };
+      $('gameEyebrow').textContent = `${level.difficulty.label} · 第 ${level.number} 关`;
+      $('gameTitle').textContent = level.name;
+      renderGame();
+      showScreen('gameScreen', 'gameTitle');
+      playSound('start');
+    }
+
+    function celebrationGoals(current) {
+      const { level, built, helped, wood, berries } = current;
+      const goals = current.facilities.filter((building) => level.builds.includes(building.id)).map((building) => ({
+        label: `建${building.name}`, count: Number(built.includes(building.id)), target: 1
+      }));
+      if (level.requests.length) goals.push({ label: '完成心愿', count: helped.length, target: level.requests.length });
+      if (level.woodGoal) goals.push({ label: '留下木头', count: wood, target: level.woodGoal });
+      if (level.reserve) goals.push({ label: '留下果实', count: berries, target: level.reserve });
+      return goals;
+    }
+
+    function availableActions() {
+      const rainy = state.level.rainDays.includes(state.day);
+      const workshop = state.built.includes('workshop');
+      const pantry = state.built.includes('pantry');
+      const woodGain = (rainy ? harvest.rainyWood : harvest.sunnyWood) + (workshop ? harvest.workshopBonus : 0);
+      const berryGain = harvest.orchardFruit + (pantry ? harvest.pantryBonus : 0);
+      return [
+        { id: 'wood', group: 'gather', icon: '🪓', label: '去木林', description: `获得 🪵 ${woodGain}、🍎 ${harvest.forestFruit}`, woodChange: woodGain, berryChange: harvest.forestFruit },
+        { id: 'berries', group: 'gather', icon: '🧺', label: '去果园', description: `获得 🍎 ${berryGain}`, woodChange: 0, berryChange: berryGain },
+        ...state.facilities.map((building) => ({
+          id: building.id,
+          group: 'build',
+          icon: building.icon,
+          label: `建${building.name}`,
+          description: `花 ${describeCost(building)} · ${describeBenefit(building)}`,
+          woodChange: -building.wood,
+          berryChange: -building.berries
+        })),
+        ...state.wishes.map((wish) => ({
+          id: wish.id,
+          group: 'wish',
+          icon: wish.icon,
+          label: wish.name,
+          description: `花 ${describeCost(wish)}${state.level.deadlines[wish.id] ? ` · 第 ${state.level.deadlines[wish.id]} 天前（含当天）` : ''}`,
+          woodChange: -wish.wood,
+          berryChange: -wish.berries
+        }))
+      ];
+    }
+
+    function describeCost({ wood, berries }) {
+      const cost = [];
+      if (wood) cost.push(`🪵 ${wood}`);
+      if (berries) cost.push(`🍎 ${berries}`);
+      return cost.join('、');
+    }
+
+    function describeBenefit(building) {
+      if (state.level.spoil && building.id === 'pantry') {
+        return `${building.benefit}，果实过夜也不会少`;
+      }
+      return building.benefit;
+    }
+
+    function isLate(wishId) {
+      return state.day > (state.level.deadlines[wishId] ?? state.level.rounds);
+    }
+
+    function previewAction(action) {
+      if (state.built.includes(action.id)) return { blocked: '设施已经建好' };
+      if (state.helped.includes(action.id)) return { blocked: '心愿已经完成' };
+      if (action.group === 'wish' && isLate(action.id)) return { blocked: '已经错过约定的日子' };
+
+      const wood = state.wood + action.woodChange;
+      const berries = state.berries + action.berryChange;
+      if (wood < 0 || berries < 0) {
+        return { blocked: `还差 ${describeCost({ wood: Math.max(0, -wood), berries: Math.max(0, -berries) })}` };
+      }
+
+      const built = action.group === 'build' ? [...state.built, action.id] : state.built;
+      const helped = action.group === 'wish' ? [...state.helped, action.id] : state.helped;
+      const next = { ...state, wood, berries, built, helped };
+      const goals = celebrationGoals(next);
+      const won = goals.every(({ count, target }) => count >= target);
+      const finished = won || state.day === state.level.rounds;
+      const lost = finished || built.includes('pantry') ? 0 : Math.min(berries, state.level.spoil);
+      next.berries -= lost;
+      return { next, lost, won, finished };
+    }
+
+    function showBoard() {
+      const facilities = state.facilities.map((building) => ({
+        ...building,
+        detail: (state.level.builds.includes(building.id) ? '本关目标 · ' : '') + describeBenefit(building),
+        status: state.built.includes(building.id) ? '已建好' : '待建造',
+        done: state.built.includes(building.id)
+      }));
+      const requests = state.wishes.map((wish) => {
+        const due = state.level.deadlines[wish.id];
+        const done = state.helped.includes(wish.id);
+        return {
+          ...wish,
+          detail: due ? `第 ${due} 天结束前 · 花 ${describeCost(wish)}` : `花 ${describeCost(wish)}`,
+          status: done ? '已完成' : isLate(wish.id) ? '已错过' : '等你帮忙',
+          done
+        };
+      });
+      $('goals').innerHTML = [...facilities, ...requests].map((item) => `
+        <div class="goal ${item.done ? 'done' : ''}">
+          <span class="goal-icon" aria-hidden="true">${item.icon}</span>
+          <div class="goal-main"><strong>${item.name}</strong><small>${item.detail}</small></div>
+          <span class="goal-state">${item.status}</span>
+        </div>`).join('');
+    }
+
+    function guideText() {
+      const pendingWish = state.wishes.find((wish) => !state.helped.includes(wish.id) && !isLate(wish.id) && state.level.deadlines[wish.id] === state.day);
+      if (pendingWish) return `今天是「${pendingWish.name}」的最后一天，先看看资源够不够。`;
+      const overdueWish = state.wishes.find((wish) => !state.helped.includes(wish.id) && isLate(wish.id));
+      if (overdueWish) return `已经错过「${overdueWish.name}」。还可以继续建小镇，结算后再试一次。`;
+      if (state.day === 1) return state.level.hint;
+      if (state.level.rainDays.includes(state.day)) return '今天伐木收获少。看看能不能先建造、去果园，或帮一位村民。';
+      if (!state.built.includes('pantry') && state.level.spoil) return '盖好仓库前，隔天会少 1 个果实。要早点盖仓库，还是先用掉果实？';
+      const tasks = celebrationGoals(state).filter(({ count, target }) => count < target);
+      if (tasks.length === 1 && tasks[0].label === '留下果实') return '只差果实了，看看去一趟果园能不能凑齐。';
+      if (tasks.length === 1 && tasks[0].label === '留下木头') return '只差木头了，看看去一趟木林能不能凑齐。';
+      return '想想明天要做哪件事，今天先给它留出木头和果实。';
+    }
+
+    function renderGame() {
+      const rainy = state.level.rainDays.includes(state.day);
+      const tomorrow = state.level.rainDays.includes(state.day + 1) ? '明天有雨' : '明天晴天';
+      const forecast = state.day < state.level.rounds && state.level.rainDays.length ? ` · ${tomorrow}` : '';
+      $('roundLabel').textContent = `第 ${state.day} / ${state.level.rounds} 天`;
+      $('woodValue').textContent = state.wood;
+      $('berryValue').textContent = state.berries;
+      $('weatherLabel').textContent = (rainy ? '🌧️ 今天有雨，木林少 2 个木头' : '☀️ 今天晴天') + forecast;
+      $('missionProgress').innerHTML = celebrationGoals(state).map(({ label, count, target }) =>
+        `<li class="${count >= target ? 'done' : ''}">${count >= target ? '✓ ' : ''}${label} <strong>${Math.min(count, target)} / ${target}</strong></li>`
+      ).join('');
+      $('guide').textContent = guideText();
+      $('log').textContent = state.message;
+      $('log').hidden = !state.message;
+      $('buildGroup').hidden = !state.facilities.length;
+      $('wishGroup').hidden = !state.wishes.length;
+      $('townPanel').hidden = !state.facilities.length && !state.wishes.length;
+      $('actionsPanel').classList.toggle('full-width', $('townPanel').hidden);
+      showBoard();
+      const actions = availableActions();
+      const focusedAction = document.activeElement?.dataset.action;
+      for (const group of ['gather', 'build', 'wish']) {
+        $(`${group}Actions`).innerHTML = actions.filter((action) => action.group === group).map((action) => {
+          const result = previewAction(action);
+          const effect = result.blocked ?? `做完剩 🪵 ${result.next.wood}、🍎 ${result.next.berries}${result.lost ? '（含过夜损耗）' : ''}`;
+          return `<button type="button" class="action" data-action="${action.id}" aria-disabled="${Boolean(result.blocked)}">
+            <span class="action-icon" aria-hidden="true">${action.icon}</span><strong>${action.label}</strong>
+            <small>${action.description}</small><span class="action-note">${effect}</span></button>`;
+        }).join('');
+      }
+      if (focusedAction) document.querySelector(`[data-action="${focusedAction}"]`)?.focus({ preventScroll: true });
+    }
+
+    function takeAction(id) {
+      if (!state || state.finished) return;
+      const action = availableActions().find((item) => item.id === id);
+      if (!action) return;
+      const result = previewAction(action);
+      if (result.blocked) return;
+
+      const updates = {
+        wood: `你在木林带回了 ${action.woodChange} 个木头和 ${action.berryChange} 个果实。`,
+        berries: `果园里的果实熟啦，你采回了 ${action.berryChange} 个。`,
+        workshop: '工坊开工啦！下次去木林可以多带回 2 个木头。',
+        pantry: state.level.spoil ? '仓库建好啦！今天起果实过夜也不会少。' : '仓库建好啦！每次去果园可以多带回 1 个果实。',
+        fox: '小狐狸爬上了新树屋，招手请你来看！',
+        bear: '熊熊装满了果篮，准备给大家做点心。',
+        rabbit: '小兔种上了花，庆典时就能看到啦。'
+      };
+      state = result.next;
+      state.message = updates[id] + (result.lost ? `过夜少了 ${result.lost} 个果实。` : '');
+      state.finished = result.finished;
+      const cue = action.group === 'wish' ? 'wish' : id;
+      if (state.finished) {
+        endGame(result.won);
+        playSound(cue, result.won ? 'cleared' : 'retry');
+        return;
+      }
+      state.day += 1;
+      renderGame();
+      playSound(cue);
+    }
+
+    function endGame(won) {
+      const goals = celebrationGoals(state);
+      const completed = goals.filter(({ count, target }) => count >= target).length;
+      const score = won ? 3 : Math.min(2, completed);
+      const missedWish = state.wishes.find((wish) => !state.helped.includes(wish.id) && state.level.deadlines[wish.id]);
+      const missing = goals.filter(({ count, target }) => count < target).map(({ label, count, target }) => `${label} ${count}/${target}`);
+      $('resultEmoji').textContent = won ? '🎉' : '🌱';
+      if (won) markCleared(state.level.number);
+      $('resultTitle').textContent = won ? `第 ${state.level.number} 关通过！` : '时间到了，再试一次吧';
+      $('resultStars').textContent = '★'.repeat(score) + '☆'.repeat(3 - score);
+      $('resultStars').setAttribute('aria-label', `获得 ${score} 颗星`);
+      $('resultCopy').textContent = won
+        ? `你用了 ${state.day} 天，完成了「${state.level.name}」的全部目标。`
+        : `还差 ${missing.join('、')}。${missedWish ? `下次记得在第 ${state.level.deadlines[missedWish.id]} 天结束前完成「${missedWish.name}」。` : '下次试试换一个顺序，把资源留给还没完成的目标。'}`;
+      $('resultStats').innerHTML = [
+        { label: '完成目标', value: `${completed}/${goals.length}` },
+        { label: '剩余木头', value: state.wood },
+        { label: '剩余果实', value: state.berries }
+      ].map(({ label, value }) => `<div class="result-stat"><strong>${value}</strong><span>${label}</span></div>`).join('');
+      $('resultLastAction').textContent = state.message;
+      $('nextButton').hidden = !won || state.level.number === levels.length;
+      $('levelsButton').classList.toggle('primary', won && state.level.number === levels.length);
+      showScreen('resultScreen', 'resultTitle');
+    }
+
+    function showLevelMap() {
+      stopSound();
+      renderLevelMap();
+      showScreen('homeScreen', 'levelTitle');
+      $('levelTitle').scrollIntoView({ block: 'start' });
+    }
+
+    function showHelp() {
+      const inLevel = $('gameScreen').classList.contains('active');
+      $('helpLevel').hidden = !inLevel;
+      if (inLevel) {
+        const { level, day } = state;
+        const rules = celebrationGoals(state).map(({ label, count, target }) =>
+          `<li>${label} ${Math.min(count, target)} / ${target}</li>`
+        );
+        for (const wish of state.wishes) {
+          const deadline = level.deadlines[wish.id];
+          if (deadline) {
+            rules.push(`<li>${wish.name}要在第 ${deadline} 天结束前完成。</li>`);
+          }
+        }
+        if (level.rainDays.length) rules.push(`<li>${$('weatherLabel').textContent}</li>`);
+        if (level.spoil) {
+          rules.push(`<li>仓库建成前，过夜会少 ${level.spoil} 个果实。</li>`);
+        }
+        $('helpLevelTitle').textContent = `第 ${level.number} 关 ${level.name} · 第 ${day} / ${level.rounds} 天`;
+        $('helpLevelRules').innerHTML = rules.join('');
+      }
+      $('helpGatherRules').innerHTML = `
+        <li><strong>去木林</strong>　晴天拿 ${harvest.sunnyWood} 个木头和 ${harvest.forestFruit} 个果实。雨天拿 ${harvest.rainyWood} 个木头和 ${harvest.forestFruit} 个果实。</li>
+        <li><strong>去果园</strong>　拿 ${harvest.orchardFruit} 个果实，雨天也一样。</li>`;
+      $('helpCostRules').innerHTML = [
+        ...buildings.map((building) =>
+          `<li><strong>建${building.name}</strong>　花 ${describeCost(building)}。${building.benefit}。</li>`
+        ),
+        ...wishes.map((wish) => `<li><strong>${wish.name}</strong>　花 ${describeCost(wish)}。</li>`)
+      ].join('');
+      $('helpDialog').showModal();
+      $('helpBody').scrollTop = 0;
+      $('helpTitle').focus({ preventScroll: true });
+    }
+
+    $('levelMap').addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-level]');
+      if (button) startGame(Number(button.dataset.level));
+    });
+    $('againButton').addEventListener('click', () => startGame(state.level.number));
+    $('nextButton').addEventListener('click', () => startGame(state.level.number + 1));
+    $('levelsButton').addEventListener('click', showLevelMap);
+    $('leaveButton').addEventListener('click', showLevelMap);
+    $('actionsPanel').addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-action]');
+      if (button) takeAction(button.dataset.action);
+    });
+    $('helpButton').addEventListener('click', showHelp);
+    $('levelHelpButton').addEventListener('click', showHelp);
+    $('closeDialog').addEventListener('click', () => $('helpDialog').close());
+    renderLevelMap();
+  </script>
+</body>
+</html>
